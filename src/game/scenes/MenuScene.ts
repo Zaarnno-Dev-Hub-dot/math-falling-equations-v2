@@ -86,8 +86,7 @@ export class MenuScene extends Phaser.Scene {
 
     // Settings button
     this.createSecondaryButton(cardX + 100, cardY + 180, '⚙ Settings', () => {
-      // TODO: Settings scene
-      console.log('Settings clicked');
+      this.scene.start('SettingsScene');
     });
   }
 

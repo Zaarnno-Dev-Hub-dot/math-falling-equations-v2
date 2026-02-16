@@ -4,6 +4,7 @@ import { MenuScene } from './scenes/MenuScene';
 import { GameScene } from './scenes/GameScene';
 import { GameOverScene } from './scenes/GameOverScene';
 import { HighScoreScene } from './scenes/HighScoreScene';
+import { SettingsScene } from './scenes/SettingsScene';
 
 export class Game {
   private game: Phaser.Game;
@@ -26,7 +27,7 @@ export class Game {
           debug: false,
         },
       },
-      scene: [BootScene, MenuScene, GameScene, GameOverScene, HighScoreScene],
+      scene: [BootScene, MenuScene, GameScene, GameOverScene, HighScoreScene, SettingsScene],
       render: {
         pixelArt: false,
         antialias: true,
