@@ -9,114 +9,75 @@ export interface ValidationResult {
 export class AnswerValidator {
   /**
    * Check if the user's answer matches the expected answer
-   * Handles: integers, decimals, fractions (simplified and unsimplified)
+   * Handles: integers, decimals, fractions (simplified and unsimplified), mixed numbers
    */
   static validate(input: string, expected: string): ValidationResult {
+    // Parse both answers to their numeric values
+    const inputValue = this.parseToNumber(input);
+    const expectedValue = this.parseToNumber(expected);
+
     const normalizedInput = this.normalize(input);
     const normalizedExpected = this.normalize(expected);
 
-    // Direct match after normalization
-    if (normalizedInput === normalizedExpected) {
-      return { correct: true, normalizedInput, normalizedAnswer: normalizedExpected };
-    }
-
-    // Try numeric comparison
-    const inputNum = this.parseNumber(input);
-    const expectedNum = this.parseNumber(expected);
-
-    if (inputNum !== null && expectedNum !== null) {
-      // Use small epsilon for float comparison
-      const correct = Math.abs(inputNum - expectedNum) < 0.0001;
+    // If we can parse both as numbers, compare numerically
+    if (inputValue !== null && expectedValue !== null) {
+      const correct = Math.abs(inputValue - expectedValue) < 0.0001;
       return { correct, normalizedInput, normalizedAnswer: normalizedExpected };
     }
 
-    // Check fraction equivalence
-    if (this.isFraction(input) && this.isFraction(expected)) {
-      const correct = this.compareFractions(input, expected);
-      return { correct, normalizedInput, normalizedAnswer: normalizedExpected };
-    }
-
-    return { correct: false, normalizedInput, normalizedAnswer: normalizedExpected };
+    // Fallback to string comparison
+    return { 
+      correct: normalizedInput === normalizedExpected, 
+      normalizedInput, 
+      normalizedAnswer: normalizedExpected 
+    };
   }
 
   /**
-   * Normalize a math answer for comparison
+   * Parse any math answer to a numeric value
+   * Handles: integers, decimals, fractions (improper/proper), mixed numbers
    */
-  private static normalize(input: string): string {
-    return input
-      .toLowerCase()
-      .replace(/\s+/g, '') // Remove all whitespace
-      .replace(/^[0]+(\d)/, '$1') // Remove leading zeros
-      .replace(/\.$/, '') // Remove trailing decimal
-      .replace(/\/0+$/, ''); // Remove trailing zeros in denominator
-  }
+  private static parseToNumber(input: string): number | null {
+    if (!input || input.trim() === '') return null;
+    
+    const trimmed = input.trim();
 
-  /**
-   * Parse a number from string (int, float, or fraction)
-   */
-  private static parseNumber(input: string): number | null {
-    const normalized = this.normalize(input);
-
-    // Try direct parse
-    const direct = parseFloat(normalized);
-    if (!isNaN(direct)) return direct;
-
-    // Try fraction
-    if (this.isFraction(normalized)) {
-      return this.fractionToDecimal(normalized);
+    // Try simple number first (int or decimal)
+    const simpleNum = parseFloat(trimmed);
+    if (!isNaN(simpleNum) && !trimmed.includes('/')) {
+      return simpleNum;
     }
 
-    // Try mixed number (e.g., "1 1/2")
-    const mixedMatch = normalized.match(/^(\d+)(\d+\/[\d]+)$/);
+    // Check for mixed number (e.g., "1 1/2", "2 3/4")
+    const mixedMatch = trimmed.match(/^(\d+)\s+(\d+)\/(\d+)$/);
     if (mixedMatch) {
-      const whole = parseInt(mixedMatch[1]);
-      const frac = this.fractionToDecimal(mixedMatch[2]);
-      return whole + frac;
+      const whole = parseInt(mixedMatch[1], 10);
+      const num = parseInt(mixedMatch[2], 10);
+      const den = parseInt(mixedMatch[3], 10);
+      if (den === 0) return null;
+      return whole + (num / den);
+    }
+
+    // Check for simple fraction (e.g., "3/2", "12/8")
+    const fracMatch = trimmed.match(/^(\d+)\/(\d+)$/);
+    if (fracMatch) {
+      const num = parseInt(fracMatch[1], 10);
+      const den = parseInt(fracMatch[2], 10);
+      if (den === 0) return null;
+      return num / den;
     }
 
     return null;
   }
 
   /**
-   * Check if input is a fraction
+   * Normalize a math answer for display/comparison
    */
-  private static isFraction(input: string): boolean {
-    return /\//.test(input) && !/^\d+\./.test(input);
-  }
-
-  /**
-   * Convert fraction string to decimal
-   */
-  private static fractionToDecimal(frac: string): number {
-    const [num, den] = frac.split('/').map(Number);
-    if (den === 0) return NaN;
-    return num / den;
-  }
-
-  /**
-   * Compare two fractions for equivalence
-   */
-  private static compareFractions(frac1: string, frac2: string): boolean {
-    // Parse mixed numbers
-    const parseMixed = (s: string): { whole: number; num: number; den: number } => {
-      const mixedMatch = s.match(/^(\d+)(\d+\/[\d]+)$/);
-      if (mixedMatch) {
-        const fracParts = mixedMatch[2].split('/').map(Number);
-        return { whole: parseInt(mixedMatch[1]), num: fracParts[0], den: fracParts[1] };
-      }
-      const parts = s.split('/').map(Number);
-      return { whole: 0, num: parts[0], den: parts[1] };
-    };
-
-    const f1 = parseMixed(this.normalize(frac1));
-    const f2 = parseMixed(this.normalize(frac2));
-
-    // Convert to improper fractions
-    const imp1 = f1.whole * f1.den + f1.num;
-    const imp2 = f2.whole * f2.den + f2.num;
-
-    // Cross multiply to compare
-    return imp1 * f2.den === imp2 * f1.den;
+  private static normalize(input: string): string {
+    return input
+      .toLowerCase()
+      .trim()
+      .replace(/\s+/g, ' '); // Normalize multiple spaces to single space
   }
 
   /**
@@ -128,14 +89,23 @@ export class AnswerValidator {
   }
 
   /**
-   * Simplify a fraction
+   * Simplify a fraction and return as string
    */
   static simplifyFraction(numerator: number, denominator: number): string {
-    const gcd = this.gcd(numerator, denominator);
+    if (denominator === 0) return 'undefined';
+    
+    const gcd = this.gcd(Math.abs(numerator), Math.abs(denominator));
     const num = numerator / gcd;
     const den = denominator / gcd;
     
-    if (den === 1) return num.toString();
+    // Convert to mixed number if improper
+    if (Math.abs(num) >= den) {
+      const whole = Math.floor(num / den);
+      const remainder = Math.abs(num) % den;
+      if (remainder === 0) return whole.toString();
+      return `${whole} ${remainder}/${den}`;
+    }
+    
     return `${num}/${den}`;
   }
 

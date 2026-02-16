@@ -52,6 +52,11 @@ describe('AnswerValidator', () => {
       expect(AnswerValidator.validate('2/4', '1/2').correct).toBe(true);
       expect(AnswerValidator.validate('3/6', '1/2').correct).toBe(true);
       expect(AnswerValidator.validate('4/8', '1/2').correct).toBe(true);
+      // 5/8 + 7/8 = 12/8 = 3/2 = 1 1/2 = 1.5
+      expect(AnswerValidator.validate('12/8', '3/2').correct).toBe(true);
+      expect(AnswerValidator.validate('12/8', '1 1/2').correct).toBe(true);
+      expect(AnswerValidator.validate('12/8', '1.5').correct).toBe(true);
+      expect(AnswerValidator.validate('6/4', '3/2').correct).toBe(true);
     });
 
     it('should validate mixed numbers', () => {
