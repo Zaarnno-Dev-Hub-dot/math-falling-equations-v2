@@ -1,6 +1,6 @@
 // Math equation generation for grades 2-5
 
-export type Operation = 'add' | 'sub' | 'mul' | 'div' | 'frac-add' | 'frac-sub' | 'decimal-mul';
+export type Operation = 'add' | 'sub' | 'mul' | 'div' | 'frac-add' | 'frac-sub';
 
 export interface Equation {
   text: string;
@@ -43,8 +43,6 @@ export class EquationGenerator {
         return this.generateFractionAddition();
       case 'frac-sub':
         return this.generateFractionSubtraction();
-      case 'decimal-mul':
-        return this.generateDecimalMultiplication();
       default:
         return this.generateAddition();
     }
@@ -71,7 +69,7 @@ export class EquationGenerator {
         }
         break;
       case 5:
-        ops.push('mul', 'div', 'frac-add', 'frac-sub', 'decimal-mul');
+        ops.push('mul', 'div', 'frac-add', 'frac-sub');
         if (this.level >= 3) {
           ops.push('add', 'sub'); // Still include basics
         }
@@ -194,21 +192,6 @@ export class EquationGenerator {
       numericAnswer: resultNum / denom,
       operation: 'frac-sub',
       difficulty: 3,
-    };
-  }
-
-  private generateDecimalMultiplication(): Equation {
-    // Grade 5: decimals like 1.5 × 4
-    const decimal = (this.rand(11, 50) / 10);
-    const whole = this.rand(2, 9);
-    const result = parseFloat((decimal * whole).toFixed(1));
-    
-    return {
-      text: `${decimal.toFixed(1)} × ${whole}`,
-      answer: result.toString(),
-      numericAnswer: result,
-      operation: 'decimal-mul',
-      difficulty: 4,
     };
   }
 

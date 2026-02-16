@@ -85,22 +85,6 @@ describe('EquationGenerator', () => {
     });
   });
 
-  describe('Grade 5', () => {
-    it('should generate decimal multiplication', () => {
-      const gen = new EquationGenerator(5);
-      let found = false;
-      for (let i = 0; i < 50; i++) {
-        const eq = gen.generate();
-        if (eq.operation === 'decimal-mul') {
-          expect(eq.text).toMatch(/^\d+\.\d × \d+$/);
-          found = true;
-          break;
-        }
-      }
-      expect(found).toBe(true);
-    });
-  });
-
   describe('Difficulty scaling', () => {
     it('should increase difficulty with level', () => {
       const gen1 = new EquationGenerator(3, 1);

@@ -32,7 +32,14 @@ export class GameScene extends Phaser.Scene {
   }
 
   init(data: GameSceneData): void {
+    // Reset all game state
     this.grade = data.grade;
+    this.level = 1;
+    this.score = 0;
+    this.lives = 3;
+    this.correctCount = 0;
+    this.wrongCount = 0;
+    this.equations = [];
     this.equationGenerator = new EquationGenerator(this.grade);
   }
 
@@ -134,7 +141,8 @@ export class GameScene extends Phaser.Scene {
   private createInputOverlay(): void {
     // Create HTML input element
     this.inputElement = document.createElement('input');
-    this.inputElement.type = 'number';
+    this.inputElement.type = 'text'; // Changed to text to allow fractions
+    this.inputElement.inputMode = 'numeric'; // Still show numeric keyboard on mobile
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
@@ -154,10 +162,27 @@ export class GameScene extends Phaser.Scene {
       z-index: 100;
     `;
 
+    // Allow only numbers, /, space (for mixed numbers), and backspace
     this.inputElement.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         this.submitAnswer();
+        return;
       }
+      // Allow: backspace, delete, tab, escape, enter, space
+      if ([8, 46, 9, 27, 13, 32].includes(e.keyCode)) {
+        return;
+      }
+      // Allow: Ctrl+A/C/V/X
+      if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].includes(e.keyCode)) {
+        return;
+      }
+      // Allow: numbers 0-9, numpad 0-9, forward slash
+      if ((e.keyCode >= 48 && e.keyCode <= 57) || 
+          (e.keyCode >= 96 && e.keyCode <= 105) ||
+          e.key === '/') {
+        return;
+      }
+      e.preventDefault();
     });
 
     document.body.appendChild(this.inputElement);
