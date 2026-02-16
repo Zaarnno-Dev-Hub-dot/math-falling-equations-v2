@@ -366,24 +366,31 @@ export class GameScene extends Phaser.Scene {
     const input = this.inputElement.value.trim();
     if (!input) return;
 
-    let found = false;
+    // Find all matching equations
+    const matches: { container: Phaser.GameObjects.Container; equation: Equation; index: number }[] = [];
 
-    for (let i = this.equations.length - 1; i >= 0; i--) {
+    for (let i = 0; i < this.equations.length; i++) {
       const container = this.equations[i];
       const equation: Equation = container.getData('equation');
 
       const result = AnswerValidator.validate(input, equation.answer);
       
       if (result.correct) {
-        this.handleCorrect(container, equation);
-        this.equations.splice(i, 1);
-        container.destroy();
-        found = true;
-        break;
+        matches.push({ container, equation, index: i });
       }
     }
 
-    if (!found) {
+    if (matches.length > 0) {
+      // Sort by Y position (highest Y = closest to ground)
+      matches.sort((a, b) => b.container.y - a.container.y);
+      
+      // Get the one closest to the ground
+      const target = matches[0];
+      
+      this.handleCorrect(target.container, target.equation);
+      this.equations.splice(target.index, 1);
+      target.container.destroy();
+    } else {
       this.handleWrong();
     }
 
