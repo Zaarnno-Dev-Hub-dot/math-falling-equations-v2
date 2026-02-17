@@ -143,25 +143,25 @@ export class GameScene extends Phaser.Scene {
     // Create HTML input element (readonly to prevent native keyboard)
     this.inputElement = document.createElement('input');
     this.inputElement.type = 'text';
-    this.inputElement.readOnly = true; // Prevent native keyboard
+    this.inputElement.readOnly = true;
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
-      bottom: 120px;
+      bottom: 85px;
       left: 50%;
       transform: translateX(-50%);
-      width: 200px;
-      height: 60px;
-      font-size: 32px;
+      width: 180px;
+      height: 50px;
+      font-size: 28px;
       text-align: center;
-      border: 4px solid #2C3E50;
-      border-radius: 16px;
+      border: 3px solid #2C3E50;
+      border-radius: 12px;
       background: white;
       font-family: Nunito, sans-serif;
       font-weight: bold;
       outline: none;
       z-index: 100;
-      caret-color: transparent; // Hide cursor
+      caret-color: transparent;
     `;
 
     document.body.appendChild(this.inputElement);
@@ -175,16 +175,16 @@ export class GameScene extends Phaser.Scene {
     numpad.id = 'on-screen-numpad';
     numpad.style.cssText = `
       position: fixed;
-      bottom: 10px;
+      bottom: 5px;
       left: 50%;
       transform: translateX(-50%);
       display: grid;
-      grid-template-columns: repeat(5, 60px);
-      gap: 8px;
-      padding: 10px;
-      background: rgba(255, 255, 255, 0.95);
-      border-radius: 16px;
-      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      grid-template-columns: repeat(5, 50px);
+      gap: 4px;
+      padding: 6px;
+      background: rgba(255, 255, 255, 0.9);
+      border-radius: 12px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.15);
       z-index: 99;
     `;
 
@@ -194,13 +194,13 @@ export class GameScene extends Phaser.Scene {
       const button = document.createElement('button');
       button.textContent = btn;
       button.style.cssText = `
-        width: 60px;
-        height: 50px;
-        font-size: 20px;
+        width: 50px;
+        height: 36px;
+        font-size: 16px;
         font-family: Nunito, sans-serif;
         font-weight: bold;
         border: none;
-        border-radius: 12px;
+        border-radius: 8px;
         background: ${btn === 'Enter' ? '#FF6B6B' : btn === '⌫' ? '#E74C3C' : '#4ECDC4'};
         color: white;
         cursor: pointer;
@@ -220,7 +220,6 @@ export class GameScene extends Phaser.Scene {
         } else {
           this.inputElement.value += btn;
         }
-        this.inputElement.focus();
       });
 
       // Touch feedback
