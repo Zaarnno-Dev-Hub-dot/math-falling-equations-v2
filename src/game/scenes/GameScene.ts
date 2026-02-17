@@ -147,7 +147,7 @@ export class GameScene extends Phaser.Scene {
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
-      bottom: 85px;
+      bottom: 95px;
       left: 50%;
       transform: translateX(-50%);
       width: 180px;
@@ -160,7 +160,7 @@ export class GameScene extends Phaser.Scene {
       font-family: Nunito, sans-serif;
       font-weight: bold;
       outline: none;
-      z-index: 100;
+      z-index: 101;
       caret-color: transparent;
     `;
 
@@ -182,10 +182,10 @@ export class GameScene extends Phaser.Scene {
       grid-template-columns: repeat(5, 50px);
       gap: 4px;
       padding: 6px;
-      background: rgba(255, 255, 255, 0.9);
+      background: rgba(255, 255, 255, 0.95);
       border-radius: 12px;
       box-shadow: 0 2px 10px rgba(0,0,0,0.15);
-      z-index: 99;
+      z-index: 100;
     `;
 
     const buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '/', '0', '⌫', ' ', 'Enter'];
