@@ -147,7 +147,7 @@ export class GameScene extends Phaser.Scene {
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
-      bottom: 95px;
+      bottom: 155px;
       left: 50%;
       transform: translateX(-50%);
       width: 180px;
