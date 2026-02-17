@@ -140,10 +140,10 @@ export class GameScene extends Phaser.Scene {
   }
 
   private createInputOverlay(): void {
-    // Create HTML input element
+    // Create HTML input element (readonly to prevent native keyboard)
     this.inputElement = document.createElement('input');
     this.inputElement.type = 'text';
-    this.inputElement.inputMode = 'decimal';
+    this.inputElement.readOnly = true; // Prevent native keyboard
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
@@ -161,18 +161,12 @@ export class GameScene extends Phaser.Scene {
       font-weight: bold;
       outline: none;
       z-index: 100;
+      caret-color: transparent; // Hide cursor
     `;
 
-    this.inputElement.addEventListener('keydown', (e) => {
-      if (e.key === 'Enter') {
-        this.submitAnswer();
-      }
-    });
-
     document.body.appendChild(this.inputElement);
-    this.inputElement.focus();
 
-    // Create on-screen numpad for mobile/touch
+    // Create on-screen numpad
     this.createOnScreenNumpad();
   }
 
