@@ -26,6 +26,7 @@ export class GameScene extends Phaser.Scene {
   private inputElement!: HTMLInputElement;
   private pauseOverlay!: Phaser.GameObjects.Container;
   private monsters!: { sprite: Phaser.GameObjects.Text; bubble: Phaser.GameObjects.Container }[];
+  private numpadElement: HTMLDivElement | null = null;
 
   constructor() {
     super({ key: 'GameScene' });
@@ -141,12 +142,12 @@ export class GameScene extends Phaser.Scene {
   private createInputOverlay(): void {
     // Create HTML input element
     this.inputElement = document.createElement('input');
-    this.inputElement.type = 'text'; // Changed to text to allow fractions
-    this.inputElement.inputMode = 'numeric'; // Still show numeric keyboard on mobile
+    this.inputElement.type = 'text';
+    this.inputElement.inputMode = 'decimal';
     this.inputElement.className = 'numpad-input';
     this.inputElement.style.cssText = `
       position: fixed;
-      bottom: 20px;
+      bottom: 120px;
       left: 50%;
       transform: translateX(-50%);
       width: 200px;
@@ -162,31 +163,87 @@ export class GameScene extends Phaser.Scene {
       z-index: 100;
     `;
 
-    // Allow only numbers, /, space (for mixed numbers), and backspace
     this.inputElement.addEventListener('keydown', (e) => {
       if (e.key === 'Enter') {
         this.submitAnswer();
-        return;
       }
-      // Allow: backspace, delete, tab, escape, enter, space
-      if ([8, 46, 9, 27, 13, 32].includes(e.keyCode)) {
-        return;
-      }
-      // Allow: Ctrl+A/C/V/X
-      if ((e.ctrlKey || e.metaKey) && [65, 67, 86, 88].includes(e.keyCode)) {
-        return;
-      }
-      // Allow: numbers 0-9, numpad 0-9, forward slash
-      if ((e.keyCode >= 48 && e.keyCode <= 57) || 
-          (e.keyCode >= 96 && e.keyCode <= 105) ||
-          e.key === '/') {
-        return;
-      }
-      e.preventDefault();
     });
 
     document.body.appendChild(this.inputElement);
     this.inputElement.focus();
+
+    // Create on-screen numpad for mobile/touch
+    this.createOnScreenNumpad();
+  }
+
+  private createOnScreenNumpad(): void {
+    const numpad = document.createElement('div');
+    numpad.id = 'on-screen-numpad';
+    numpad.style.cssText = `
+      position: fixed;
+      bottom: 10px;
+      left: 50%;
+      transform: translateX(-50%);
+      display: grid;
+      grid-template-columns: repeat(5, 60px);
+      gap: 8px;
+      padding: 10px;
+      background: rgba(255, 255, 255, 0.95);
+      border-radius: 16px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+      z-index: 99;
+    `;
+
+    const buttons = ['1', '2', '3', '4', '5', '6', '7', '8', '9', '/', '0', '⌫', ' ', 'Enter'];
+    
+    buttons.forEach((btn) => {
+      const button = document.createElement('button');
+      button.textContent = btn;
+      button.style.cssText = `
+        width: 60px;
+        height: 50px;
+        font-size: 20px;
+        font-family: Nunito, sans-serif;
+        font-weight: bold;
+        border: none;
+        border-radius: 12px;
+        background: ${btn === 'Enter' ? '#FF6B6B' : btn === '⌫' ? '#E74C3C' : '#4ECDC4'};
+        color: white;
+        cursor: pointer;
+        touch-action: manipulation;
+      `;
+      
+      button.addEventListener('click', (e) => {
+        e.preventDefault();
+        e.stopPropagation();
+        
+        if (btn === 'Enter') {
+          this.submitAnswer();
+        } else if (btn === '⌫') {
+          this.inputElement.value = this.inputElement.value.slice(0, -1);
+        } else if (btn === ' ') {
+          this.inputElement.value += ' ';
+        } else {
+          this.inputElement.value += btn;
+        }
+        this.inputElement.focus();
+      });
+
+      // Touch feedback
+      button.addEventListener('touchstart', () => {
+        button.style.transform = 'scale(0.95)';
+      });
+      button.addEventListener('touchend', () => {
+        button.style.transform = 'scale(1)';
+      });
+
+      numpad.appendChild(button);
+    });
+
+    document.body.appendChild(numpad);
+
+    // Store reference for cleanup
+    this.numpadElement = numpad;
   }
 
   private createMonsters(): void {
@@ -613,6 +670,7 @@ export class GameScene extends Phaser.Scene {
   private cleanupAndQuit(): void {
     this.spawnTimer.remove();
     this.inputElement?.remove();
+    this.numpadElement?.remove();
     AudioManager.getInstance().stopBGM();
     this.scene.start('MenuScene');
   }
@@ -643,6 +701,7 @@ export class GameScene extends Phaser.Scene {
   private gameOver(): void {
     this.spawnTimer.remove();
     this.inputElement.remove();
+    this.numpadElement?.remove();
     AudioManager.getInstance().stopBGM();
 
     // Calculate stats
